@@ -73,12 +73,16 @@ void tracefile_codbg_agent::cont()
 	string rec;
 	uint32_t start_off;
 
+	fprintf(stdout, "--> cont: 0x%08x\n", read_reg(15));
+
 	while ((rec = next_record(start_off)) != "") {
 		process_record(rec);
 		if (m_hit_breakpoint) {
 			break;
 		}
 	}
+	fprintf(stdout, "<-- cont: 0x%08x hit_breakpoint=%d\n",
+			read_reg(15), m_hit_breakpoint);
 }
 
 string tracefile_codbg_agent::next_record(uint32_t &start_off)

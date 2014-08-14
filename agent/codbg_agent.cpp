@@ -43,7 +43,18 @@ void codbg_agent::set_breakpoint(uint32_t addr)
 
 void codbg_agent::clr_breakpoint(uint32_t addr)
 {
-	// TODO:
+	vector<uint32_t>::iterator it = m_bp.begin();
+
+	while (it != m_bp.end()) {
+		if (*it == addr) {
+			break;
+		}
+		it++;
+	}
+
+	if (it != m_bp.end()) {
+		m_bp.erase(it);
+	}
 }
 
 void codbg_agent::read(uint64_t addr, uint8_t *data, uint32_t sz)
@@ -84,7 +95,9 @@ static const int	SHT_SHLIB			= 10;
 static const int	SHT_DYNSYM			= 11;
 static const int	SHT_UNKNOWN12		= 12;
 static const int	SHT_UNKNOWN13		= 13;
+#endif
 static const int	SHT_INIT_ARRAY		= 14;
+#ifdef UNDEFINED
 static const int	SHT_FINI_ARRAY		= 15;
 static const int	SHT_PREINIT_ARRAY	= 16;
 static const int	SHT_GROUP			= 17;
@@ -203,8 +216,8 @@ bool codbg_agent::load_exe(const char *filename)
 
 		fread(&shdr, sizeof(Elf32_Shdr), 1, fp);
 
-		if (shdr.sh_type == SHT_PROGBITS && shdr.sh_size != 0 &&
-			(shdr.sh_flags & SHF_ALLOC) != 0) {
+		if ((shdr.sh_type == SHT_PROGBITS || shdr.sh_type == SHT_INIT_ARRAY) &&
+				shdr.sh_size != 0 && (shdr.sh_flags & SHF_ALLOC) != 0) {
 			// read in data
 			uint8_t *tmp = new uint8_t[shdr.sh_size];
 			fprintf(stdout, "Loading %d bytes @ 0x%08x..0x%08x\n",
